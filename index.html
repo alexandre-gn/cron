@@ -3,453 +3,448 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Convertisseur Temps vers CRON (avec secondes)</title>
+    <title>Convertisseur Temps vers CRON</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #6b21a8 0%, #1e40af 100%);
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
         }
-        .input-focus:focus {
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        
+        .slider-thumb::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
         }
-        .result-box {
-            transition: all 0.3s ease;
-        }
-        .copy-btn {
-            transition: all 0.2s ease;
-        }
-        .copy-btn:hover {
-            transform: scale(1.05);
-        }
-        .copy-btn:active {
-            transform: scale(0.95);
-        }
-        .tooltip {
+        
+        .switch {
             position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
         }
-        .tooltip-text {
-            visibility: hidden;
-            width: 120px;
-            background-color: #4b5563;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
+        
+        .switch input {
             opacity: 0;
-            transition: opacity 0.3s;
+            width: 0;
+            height: 0;
         }
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
         }
-        .time-inputs {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
-        .time-input {
-            display: flex;
-            flex-direction: column;
+        
+        input:checked + .slider {
+            background-color: #4f46e5;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
-<body class="min-h-screen bg-gray-100">
-    <div class="gradient-bg text-white py-12 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl font-bold mb-4">Convertisseur Temps vers CRON</h1>
-            <p class="text-xl opacity-90">Transformez facilement vos dates et heures en expressions CRON (avec secondes)</p>
-        </div>
-    </div>
-
-    <div class="max-w-4xl mx-auto px-4 py-8 -mt-12">
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="p-6 md:p-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-semibold text-gray-800">Paramètres</h2>
-                            <button id="reset-btn" class="text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
-                                <i class="fas fa-redo"></i>
-                                <span>Réinitialiser</span>
-                            </button>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-indigo-600 mb-2">Convertisseur Temps → CRON</h1>
+                <p class="text-gray-600">Générez facilement des expressions CRON à partir de paramètres temporels</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Minutes -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700">Minutes</label>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500">Toutes (*)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleMinutes" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="text-xs text-gray-500">Spécifique</span>
+                                </div>
+                            </div>
+                            <div id="minutesContainer" class="hidden">
+                                <div class="flex items-center space-x-4">
+                                    <input type="range" min="1" max="59" value="5" class="w-full slider-thumb" id="minutesSlider">
+                                    <input type="number" min="1" max="59" value="5" class="w-20 px-3 py-2 border border-gray-300 rounded-md text-center" id="minutesInput">
+                                </div>
+                                <div class="mt-2 flex justify-between text-xs text-gray-500">
+                                    <span>1</span>
+                                    <span>59</span>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2" for="date">Date</label>
-                                <input type="date" id="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg input-focus focus:outline-none focus:border-indigo-500">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">Heure (HH:MM:SS)</label>
-                                <div class="time-inputs">
-                                    <div class="time-input">
-                                        <label class="text-sm text-gray-500 mb-1">Heures</label>
-                                        <input type="number" id="hours" min="0" max="23" value="0" class="px-3 py-2 border border-gray-300 rounded-lg input-focus">
-                                    </div>
-                                    <div class="time-input">
-                                        <label class="text-sm text-gray-500 mb-1">Minutes</label>
-                                        <input type="number" id="minutes" min="0" max="59" value="0" class="px-3 py-2 border border-gray-300 rounded-lg input-focus">
-                                    </div>
-                                    <div class="time-input">
-                                        <label class="text-sm text-gray-500 mb-1">Secondes</label>
-                                        <input type="number" id="seconds" min="0" max="59" value="0" class="px-3 py-2 border border-gray-300 rounded-lg input-focus">
-                                    </div>
-                                    <div class="time-input flex items-end">
-                                        <button id="now-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-lg text-sm">
-                                            Maintenant
-                                        </button>
-                                    </div>
+                        <!-- Heures -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700">Heures</label>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500">Toutes (*)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleHours" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="text-xs text-gray-500">Spécifique</span>
                                 </div>
                             </div>
-                            
-                            <div>
-                                <label class="block text-gray-700 font-medium mb-2">Fréquence</label>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <button id="once" class="frequency-btn bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium">Une fois</button>
-                                    <button id="daily" class="frequency-btn bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium">Quotidien</button>
-                                    <button id="weekly" class="frequency-btn bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium">Hebdomadaire</button>
-                                    <button id="monthly" class="frequency-btn bg-white border border-gray-300 px-4 py-2 rounded-lg font-medium">Mensuel</button>
+                            <div id="hoursContainer" class="hidden">
+                                <div class="flex items-center space-x-4">
+                                    <input type="range" min="0" max="23" value="12" class="w-full slider-thumb" id="hoursSlider">
+                                    <input type="number" min="0" max="23" value="12" class="w-20 px-3 py-2 border border-gray-300 rounded-md text-center" id="hoursInput">
+                                </div>
+                                <div class="mt-2 flex justify-between text-xs text-gray-500">
+                                    <span>0</span>
+                                    <span>23</span>
                                 </div>
                             </div>
-                            
-                            <div id="weekly-options" class="hidden">
-                                <label class="block text-gray-700 font-medium mb-2">Jours de la semaine</label>
-                                <div class="flex flex-wrap gap-2">
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="1">Lun</button>
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="2">Mar</button>
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="3">Mer</button>
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="4">Jeu</button>
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="5">Ven</button>
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="6">Sam</button>
-                                    <button class="day-btn bg-white border border-gray-300 px-3 py-1 rounded-lg" data-day="0">Dim</button>
+                        </div>
+                        
+                        <!-- Jours du mois -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700">Jours du mois</label>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500">Tous (*)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleDays" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="text-xs text-gray-500">Spécifique</span>
                                 </div>
+                            </div>
+                            <div id="daysContainer" class="hidden">
+                                <div class="flex items-center space-x-4">
+                                    <input type="range" min="1" max="31" value="15" class="w-full slider-thumb" id="daysSlider">
+                                    <input type="number" min="1" max="31" value="15" class="w-20 px-3 py-2 border border-gray-300 rounded-md text-center" id="daysInput">
+                                </div>
+                                <div class="mt-2 flex justify-between text-xs text-gray-500">
+                                    <span>1</span>
+                                    <span>31</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mois -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700">Mois</label>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500">Tous (*)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleMonths" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="text-xs text-gray-500">Spécifique</span>
+                                </div>
+                            </div>
+                            <div id="monthsContainer" class="hidden">
+                                <select id="monthsSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    <option value="1">Janvier</option>
+                                    <option value="2">Février</option>
+                                    <option value="3">Mars</option>
+                                    <option value="4">Avril</option>
+                                    <option value="5">Mai</option>
+                                    <option value="6">Juin</option>
+                                    <option value="7">Juillet</option>
+                                    <option value="8">Août</option>
+                                    <option value="9">Septembre</option>
+                                    <option value="10">Octobre</option>
+                                    <option value="11">Novembre</option>
+                                    <option value="12">Décembre</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Jours de la semaine -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-sm font-medium text-gray-700">Jours de la semaine</label>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500">Tous (*)</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="toggleWeekdays" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                    <span class="text-xs text-gray-500">Spécifique</span>
+                                </div>
+                            </div>
+                            <div id="weekdaysContainer" class="hidden">
+                                <select id="weekdaysSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    <option value="0">Dimanche</option>
+                                    <option value="1">Lundi</option>
+                                    <option value="2">Mardi</option>
+                                    <option value="3">Mercredi</option>
+                                    <option value="4">Jeudi</option>
+                                    <option value="5">Vendredi</option>
+                                    <option value="6">Samedi</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                     
-                    <div>
-                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">Résultat CRON</h2>
-                        
-                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 result-box">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-medium text-gray-700">Expression CRON</h3>
-                                <div class="flex gap-2">
-                                    <button id="copy-btn" class="copy-btn bg-indigo-600 text-white px-3 py-1 rounded-lg flex items-center gap-1">
-                                        <i class="fas fa-copy"></i>
-                                        <span>Copier</span>
-                                    </button>
-                                    <div class="tooltip">
-                                        <button class="copy-btn bg-gray-200 text-gray-800 px-3 py-1 rounded-lg">
-                                            <i class="fas fa-info-circle"></i>
-                                        </button>
-                                        <span class="tooltip-text">Format: secondes minutes heures jour mois jour-semaine</span>
-                                    </div>
-                                </div>
+                    <div class="mt-8">
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="font-medium text-gray-700">Expression CRON générée</h3>
+                                <button id="copyBtn" class="text-indigo-600 hover:text-indigo-800">
+                                    <i class="far fa-copy"></i> Copier
+                                </button>
                             </div>
-                            
-                            <div class="bg-white p-4 rounded-lg border border-gray-200 mb-4">
-                                <code id="cron-expression" class="text-lg font-mono text-indigo-600 break-all">* * * * * *</code>
-                            </div>
-                            
-                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                <h4 class="font-medium text-blue-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-info-circle"></i>
-                                    <span>Explication</span>
-                                </h4>
-                                <p id="cron-explanation" class="text-sm text-gray-700">L'expression CRON s'exécutera une fois immédiatement.</p>
+                            <div class="bg-white p-3 rounded border border-gray-300">
+                                <code id="cronOutput" class="text-lg font-mono">* * * * *</code>
                             </div>
                         </div>
-                        
-                        <div class="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <h3 class="font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                <i class="fas fa-question-circle"></i>
-                                <span>Comment ça marche ?</span>
-                            </h3>
-                            <p class="text-sm text-gray-600">Sélectionnez une date et une heure (avec secondes), puis choisissez la fréquence. L'expression CRON correspondante (6 champs) sera générée automatiquement.</p>
-                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-between">
+                        <button id="resetBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+                            <i class="fas fa-redo mr-2"></i> Réinitialiser
+                        </button>
+                        <button id="generateBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+                            <i class="fas fa-cog mr-2"></i> Générer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="font-medium text-gray-700 mb-4">Explications de l'expression CRON</h3>
+                    <div id="explanation" class="text-gray-600">
+                        <p>Votre expression CRON s'exécutera <span class="font-semibold">toutes les minutes</span>.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div class="p-6 md:p-8">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Guide CRON (6 champs)</h2>
-                
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white border border-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Champ</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valeurs</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">Secondes</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">0-59</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">Secondes à laquelle la commande s'exécute</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">Minutes</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">0-59</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">Minute à laquelle la commande s'exécute</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">Heures</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">0-23</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">Heure à laquelle la commande s'exécute</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">Jour du mois</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">1-31</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">Jour du mois où la commande s'exécute</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">Mois</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">1-12</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">Mois où la commande s'exécute</td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">Jour de la semaine</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">0-7 (0 et 7 = dimanche)</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">Jour de la semaine où la commande s'exécute</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer class="bg-gray-800 text-white py-6">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <p>© 2023 Convertisseur CRON avancé. Tous droits réservés.</p>
-        </div>
-    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Éléments du DOM
-            const dateInput = document.getElementById('date');
-            const hoursInput = document.getElementById('hours');
-            const minutesInput = document.getElementById('minutes');
-            const secondsInput = document.getElementById('seconds');
-            const frequencyBtns = document.querySelectorAll('.frequency-btn');
-            const dayBtns = document.querySelectorAll('.day-btn');
-            const weeklyOptions = document.getElementById('weekly-options');
-            const cronExpression = document.getElementById('cron-expression');
-            const cronExplanation = document.getElementById('cron-explanation');
-            const copyBtn = document.getElementById('copy-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const nowBtn = document.getElementById('now-btn');
+            // Initialisation des éléments
+            const toggleMinutes = document.getElementById('toggleMinutes');
+            const minutesContainer = document.getElementById('minutesContainer');
+            const minutesSlider = document.getElementById('minutesSlider');
+            const minutesInput = document.getElementById('minutesInput');
             
-            // Définir la date et heure actuelle par défaut
-            setCurrentDateTime();
+            const toggleHours = document.getElementById('toggleHours');
+            const hoursContainer = document.getElementById('hoursContainer');
+            const hoursSlider = document.getElementById('hoursSlider');
+            const hoursInput = document.getElementById('hoursInput');
             
-            // Variables d'état
-            let frequency = 'once';
-            let selectedDays = [];
+            const toggleDays = document.getElementById('toggleDays');
+            const daysContainer = document.getElementById('daysContainer');
+            const daysSlider = document.getElementById('daysSlider');
+            const daysInput = document.getElementById('daysInput');
             
-            // Écouteurs d'événements
-            dateInput.addEventListener('change', updateCron);
-            hoursInput.addEventListener('change', validateTimeInput);
-            minutesInput.addEventListener('change', validateTimeInput);
-            secondsInput.addEventListener('change', validateTimeInput);
-            hoursInput.addEventListener('input', updateCron);
-            minutesInput.addEventListener('input', updateCron);
-            secondsInput.addEventListener('input', updateCron);
+            const toggleMonths = document.getElementById('toggleMonths');
+            const monthsContainer = document.getElementById('monthsContainer');
+            const monthsSelect = document.getElementById('monthsSelect');
             
-            frequencyBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Mettre à jour le style des boutons
-                    frequencyBtns.forEach(b => {
-                        b.classList.remove('bg-indigo-600', 'text-white');
-                        b.classList.add('bg-white', 'border', 'border-gray-300');
-                    });
-                    
-                    this.classList.remove('bg-white', 'border', 'border-gray-300');
-                    this.classList.add('bg-indigo-600', 'text-white');
-                    
-                    // Mettre à jour la fréquence
-                    frequency = this.id;
-                    
-                    // Afficher/masquer les options hebdomadaires
-                    if (frequency === 'weekly') {
-                        weeklyOptions.classList.remove('hidden');
-                    } else {
-                        weeklyOptions.classList.add('hidden');
-                    }
-                    
-                    updateCron();
-                });
+            const toggleWeekdays = document.getElementById('toggleWeekdays');
+            const weekdaysContainer = document.getElementById('weekdaysContainer');
+            const weekdaysSelect = document.getElementById('weekdaysSelect');
+            
+            const cronOutput = document.getElementById('cronOutput');
+            const explanation = document.getElementById('explanation');
+            const generateBtn = document.getElementById('generateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // Gestion des bascules
+            toggleMinutes.addEventListener('change', function() {
+                minutesContainer.classList.toggle('hidden', !this.checked);
+                updateCron();
             });
             
-            dayBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const day = this.dataset.day;
-                    
-                    if (this.classList.contains('bg-indigo-600')) {
-                        // Désélectionner
-                        this.classList.remove('bg-indigo-600', 'text-white');
-                        this.classList.add('bg-white', 'border', 'border-gray-300');
-                        selectedDays = selectedDays.filter(d => d !== day);
-                    } else {
-                        // Sélectionner
-                        this.classList.remove('bg-white', 'border', 'border-gray-300');
-                        this.classList.add('bg-indigo-600', 'text-white');
-                        selectedDays.push(day);
-                    }
-                    
-                    updateCron();
-                });
+            toggleHours.addEventListener('change', function() {
+                hoursContainer.classList.toggle('hidden', !this.checked);
+                updateCron();
             });
             
+            toggleDays.addEventListener('change', function() {
+                daysContainer.classList.toggle('hidden', !this.checked);
+                updateCron();
+            });
+            
+            toggleMonths.addEventListener('change', function() {
+                monthsContainer.classList.toggle('hidden', !this.checked);
+                updateCron();
+            });
+            
+            toggleWeekdays.addEventListener('change', function() {
+                weekdaysContainer.classList.toggle('hidden', !this.checked);
+                updateCron();
+            });
+            
+            // Synchronisation des sliders et inputs
+            minutesSlider.addEventListener('input', function() {
+                minutesInput.value = this.value;
+                updateCron();
+            });
+            
+            minutesInput.addEventListener('input', function() {
+                if (this.value < 1) this.value = 1;
+                if (this.value > 59) this.value = 59;
+                minutesSlider.value = this.value;
+                updateCron();
+            });
+            
+            hoursSlider.addEventListener('input', function() {
+                hoursInput.value = this.value;
+                updateCron();
+            });
+            
+            hoursInput.addEventListener('input', function() {
+                if (this.value < 0) this.value = 0;
+                if (this.value > 23) this.value = 23;
+                hoursSlider.value = this.value;
+                updateCron();
+            });
+            
+            daysSlider.addEventListener('input', function() {
+                daysInput.value = this.value;
+                updateCron();
+            });
+            
+            daysInput.addEventListener('input', function() {
+                if (this.value < 1) this.value = 1;
+                if (this.value > 31) this.value = 31;
+                daysSlider.value = this.value;
+                updateCron();
+            });
+            
+            monthsSelect.addEventListener('change', updateCron);
+            weekdaysSelect.addEventListener('change', updateCron);
+            
+            // Mise à jour de l'expression CRON
+            function updateCron() {
+                const minutes = toggleMinutes.checked ? minutesInput.value : '*';
+                const hours = toggleHours.checked ? hoursInput.value : '*';
+                const days = toggleDays.checked ? daysInput.value : '*';
+                const months = toggleMonths.checked ? monthsSelect.value : '*';
+                const weekdays = toggleWeekdays.checked ? weekdaysSelect.value : '*';
+                
+                cronOutput.textContent = `${minutes} ${hours} ${days} ${months} ${weekdays}`;
+                updateExplanation(minutes, hours, days, months, weekdays);
+            }
+            
+            // Mise à jour des explications
+            function updateExplanation(minutes, hours, days, months, weekdays) {
+                let explanationText = "Votre expression CRON s'exécutera ";
+                
+                // Minutes
+                if (minutes === '*') {
+                    explanationText += "<span class='font-semibold'>toutes les minutes</span>";
+                } else {
+                    explanationText += `à la <span class='font-semibold'>${minutes}ème minute</span>`;
+                }
+                
+                // Heures
+                if (hours === '*') {
+                    explanationText += " de <span class='font-semibold'>toutes les heures</span>";
+                } else {
+                    explanationText += ` de <span class='font-semibold'>${hours}h</span>`;
+                }
+                
+                // Jours du mois
+                if (days === '*') {
+                    explanationText += ", <span class='font-semibold'>tous les jours du mois</span>";
+                } else {
+                    explanationText += `, le <span class='font-semibold'>${days} du mois</span>`;
+                }
+                
+                // Mois
+                if (months === '*') {
+                    explanationText += ", <span class='font-semibold'>tous les mois</span>";
+                } else {
+                    const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", 
+                                       "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+                    explanationText += `, en <span class='font-semibold'>${monthNames[months-1]}</span>`;
+                }
+                
+                // Jours de la semaine
+                if (weekdays === '*') {
+                    explanationText += ", <span class='font-semibold'>tous les jours de la semaine</span>";
+                } else {
+                    const weekdayNames = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+                    explanationText += `, le <span class='font-semibold'>${weekdayNames[weekdays]}</span>`;
+                }
+                
+                explanationText += ".";
+                explanation.innerHTML = explanationText;
+            }
+            
+            // Bouton de copie
             copyBtn.addEventListener('click', function() {
-                const text = cronExpression.textContent;
-                navigator.clipboard.writeText(text).then(() => {
-                    // Afficher un feedback visuel
+                navigator.clipboard.writeText(cronOutput.textContent).then(() => {
                     const originalText = copyBtn.innerHTML;
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i><span>Copié !</span>';
-                    
+                    copyBtn.innerHTML = "<i class='fas fa-check'></i> Copié!";
                     setTimeout(() => {
                         copyBtn.innerHTML = originalText;
                     }, 2000);
                 });
             });
             
+            // Bouton de réinitialisation
             resetBtn.addEventListener('click', function() {
-                setCurrentDateTime();
-                frequencyBtns.forEach(b => {
-                    b.classList.remove('bg-indigo-600', 'text-white');
-                    b.classList.add('bg-white', 'border', 'border-gray-300');
-                });
-                document.getElementById('once').classList.remove('bg-white', 'border', 'border-gray-300');
-                document.getElementById('once').classList.add('bg-indigo-600', 'text-white');
-                frequency = 'once';
-                weeklyOptions.classList.add('hidden');
-                selectedDays = [];
-                dayBtns.forEach(btn => {
-                    btn.classList.remove('bg-indigo-600', 'text-white');
-                    btn.classList.add('bg-white', 'border', 'border-gray-300');
-                });
+                toggleMinutes.checked = false;
+                toggleHours.checked = false;
+                toggleDays.checked = false;
+                toggleMonths.checked = false;
+                toggleWeekdays.checked = false;
+                
+                minutesContainer.classList.add('hidden');
+                hoursContainer.classList.add('hidden');
+                daysContainer.classList.add('hidden');
+                monthsContainer.classList.add('hidden');
+                weekdaysContainer.classList.add('hidden');
+                
+                minutesSlider.value = 5;
+                minutesInput.value = 5;
+                hoursSlider.value = 12;
+                hoursInput.value = 12;
+                daysSlider.value = 15;
+                daysInput.value = 15;
+                monthsSelect.value = 1;
+                weekdaysSelect.value = 1;
+                
                 updateCron();
             });
             
-            nowBtn.addEventListener('click', function() {
-                setCurrentDateTime();
-                updateCron();
-            });
-            
-            // Fonction pour définir la date et heure actuelle
-            function setCurrentDateTime() {
-                const now = new Date();
-                dateInput.valueAsDate = now;
-                hoursInput.value = now.getHours();
-                minutesInput.value = now.getMinutes();
-                secondsInput.value = now.getSeconds();
-            }
-            
-            // Fonction pour valider les entrées de temps
-            function validateTimeInput(e) {
-                const input = e.target;
-                let value = parseInt(input.value);
-                
-                if (isNaN(value)) {
-                    input.value = 0;
-                    return;
-                }
-                
-                const max = input.id === 'hours' ? 23 : 59;
-                const min = 0;
-                
-                if (value > max) input.value = max;
-                if (value < min) input.value = min;
-                
-                updateCron();
-            }
-            
-            // Fonction pour mettre à jour l'expression CRON
-            function updateCron() {
-                const date = new Date(dateInput.value);
-                const hours = parseInt(hoursInput.value) || 0;
-                const minutes = parseInt(minutesInput.value) || 0;
-                const seconds = parseInt(secondsInput.value) || 0;
-                
-                date.setHours(hours);
-                date.setMinutes(minutes);
-                date.setSeconds(seconds);
-                
-                let cron = '';
-                let explanation = '';
-                
-                switch (frequency) {
-                    case 'once':
-                        cron = `${seconds} ${minutes} ${hours} ${date.getDate()} ${date.getMonth() + 1} *`;
-                        explanation = `L'expression CRON s'exécutera une seule fois le ${formatDate(date)} à ${formatTime(date)}.`;
-                        break;
-                        
-                    case 'daily':
-                        cron = `${seconds} ${minutes} ${hours} * * *`;
-                        explanation = `L'expression CRON s'exécutera quotidiennement à ${formatTime(date)}.`;
-                        break;
-                        
-                    case 'weekly':
-                        if (selectedDays.length === 0) {
-                            cron = `${seconds} ${minutes} ${hours} * * ${date.getDay()}`;
-                            explanation = `L'expression CRON s'exécutera chaque semaine le ${getDayName(date.getDay())} à ${formatTime(date)}.`;
-                        } else {
-                            cron = `${seconds} ${minutes} ${hours} * * ${selectedDays.join(',')}`;
-                            const dayNames = selectedDays.map(day => getDayName(parseInt(day))).join(', ');
-                            explanation = `L'expression CRON s'exécutera chaque semaine les ${dayNames} à ${formatTime(date)}.`;
-                        }
-                        break;
-                        
-                    case 'monthly':
-                        cron = `${seconds} ${minutes} ${hours} ${date.getDate()} * *`;
-                        explanation = `L'expression CRON s'exécutera chaque mois le ${date.getDate()} à ${formatTime(date)}.`;
-                        break;
-                }
-                
-                cronExpression.textContent = cron;
-                cronExplanation.textContent = explanation;
-            }
-            
-            // Fonctions utilitaires
-            function formatDate(date) {
-                return date.toLocaleDateString('fr-FR', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
-                });
-            }
-            
-            function formatTime(date) {
-                return date.toLocaleTimeString('fr-FR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-            }
-            
-            function getDayName(day) {
-                const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-                return days[day];
-            }
-            
-            // Initialiser
-            document.getElementById('once').click();
+            // Initialisation
             updateCron();
         });
     </script>
